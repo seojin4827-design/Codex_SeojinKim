@@ -1,0 +1,799 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>아모레퍼시픽 CS 문의 분류 프로토타입</title>
+  <style>
+    :root {
+      --bg: #f5f7f6;
+      --panel: #ffffff;
+      --ink: #202422;
+      --muted: #69736f;
+      --line: #dbe4df;
+      --green: #176b5f;
+      --green-soft: #e5f3f0;
+      --blue: #315c9b;
+      --blue-soft: #e9effa;
+      --red: #b3261e;
+      --red-soft: #fdebea;
+      --amber: #8a5a00;
+      --amber-soft: #fff3d8;
+      --gray-soft: #edf1ef;
+      --shadow: 0 18px 42px rgba(31, 48, 42, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(23, 107, 95, 0.1), transparent 340px),
+        var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif;
+      letter-spacing: 0;
+    }
+
+    button,
+    textarea {
+      font: inherit;
+    }
+
+    .shell {
+      width: min(1180px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 28px 0 36px;
+    }
+
+    .top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .mark {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      color: #fff;
+      background: var(--green);
+      font-weight: 800;
+      flex: 0 0 auto;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(24px, 3vw, 34px);
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .policy-badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      padding: 7px 12px;
+      border: 1px solid rgba(138, 90, 0, 0.26);
+      border-radius: 999px;
+      color: #634200;
+      background: var(--amber-soft);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(320px, 0.88fr) minmax(420px, 1.12fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.82);
+    }
+
+    .panel-title {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 760;
+    }
+
+    .panel-body {
+      padding: 18px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 9px;
+      color: #394541;
+      font-size: 13px;
+      font-weight: 720;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 250px;
+      resize: vertical;
+      padding: 14px;
+      border: 1px solid #c9d4cf;
+      border-radius: 8px;
+      color: var(--ink);
+      background: #fbfcfb;
+      line-height: 1.55;
+      outline: none;
+      transition: border-color 150ms ease, box-shadow 150ms ease;
+    }
+
+    textarea:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(23, 107, 95, 0.14);
+    }
+
+    .actions,
+    .samples {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .actions {
+      margin-top: 14px;
+    }
+
+    .samples {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 18px;
+      gap: 8px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 40px;
+      padding: 9px 14px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 720;
+      line-height: 1.25;
+      transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
+    }
+
+    .button:hover {
+      transform: translateY(-1px);
+    }
+
+    .button:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+      transform: none;
+    }
+
+    .button-primary {
+      color: #fff;
+      background: var(--green);
+      box-shadow: 0 10px 22px rgba(23, 107, 95, 0.18);
+    }
+
+    .button-secondary,
+    .sample-button {
+      color: #26332f;
+      border-color: #c9d5d0;
+      background: #fff;
+    }
+
+    .sample-button {
+      min-height: 38px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: left;
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .sample-button:hover {
+      border-color: var(--green);
+      background: var(--green-soft);
+    }
+
+    .icon {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 auto;
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .metric {
+      min-height: 96px;
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfb;
+    }
+
+    .metric-label {
+      margin: 0 0 7px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 760;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      max-width: 100%;
+      min-height: 30px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 15px;
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
+
+    .delivery {
+      color: #24487f;
+      background: var(--blue-soft);
+    }
+
+    .refund {
+      color: #6a4300;
+      background: var(--amber-soft);
+    }
+
+    .ingredient {
+      color: #12605a;
+      background: var(--green-soft);
+    }
+
+    .adverse {
+      color: #8f211b;
+      background: var(--red-soft);
+    }
+
+    .other {
+      color: #424947;
+      background: var(--gray-soft);
+    }
+
+    .risk-high {
+      color: #8f211b;
+      background: var(--red-soft);
+    }
+
+    .risk-low {
+      color: #12605a;
+      background: var(--green-soft);
+    }
+
+    .approval-wait {
+      color: #8f211b;
+      background: var(--red-soft);
+    }
+
+    .approval-ready {
+      color: #12605a;
+      background: var(--green-soft);
+    }
+
+    .notice {
+      padding: 12px;
+      border: 1px solid rgba(138, 90, 0, 0.24);
+      border-radius: 8px;
+      color: #5f4308;
+      background: var(--amber-soft);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .section {
+      border-top: 1px solid var(--line);
+      padding-top: 16px;
+      margin-top: 16px;
+    }
+
+    .section-title {
+      margin: 0 0 10px;
+      color: #394541;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .draft,
+    .redacted {
+      padding: 14px;
+      border: 1px solid #cbd6d1;
+      border-radius: 8px;
+      background: #fbfcfb;
+      line-height: 1.65;
+      white-space: pre-wrap;
+    }
+
+    .draft {
+      min-height: 170px;
+    }
+
+    .redacted {
+      min-height: 72px;
+      border-style: dashed;
+      color: #48534f;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      color: #394541;
+      background: #eef1ef;
+      font-size: 13px;
+      line-height: 1.25;
+    }
+
+    .empty {
+      min-height: 340px;
+      display: grid;
+      place-items: center;
+      padding: 28px;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    .footnote {
+      margin: 16px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 900px) {
+      .shell {
+        width: min(100vw - 20px, 700px);
+        padding-top: 18px;
+      }
+
+      .top {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .workspace,
+      .result-grid,
+      .samples {
+        grid-template-columns: 1fr;
+      }
+
+      .policy-badge {
+        white-space: normal;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="top">
+      <div class="brand">
+        <div class="mark" aria-hidden="true">CS</div>
+        <div>
+          <h1>아모레퍼시픽 CS 문의 분류</h1>
+          <p class="subtitle">배송, 환불, 성분, 부작용, 기타 분류와 상담원 검토용 초안</p>
+        </div>
+      </div>
+      <div class="policy-badge">승인된 회사 정책 자료 미연결</div>
+    </header>
+
+    <section class="workspace" aria-label="CS 문의 분석 작업 영역">
+      <div class="panel">
+        <div class="panel-header">
+          <h2 class="panel-title">문의 입력</h2>
+        </div>
+        <div class="panel-body">
+          <label for="inquiryInput">고객 문의</label>
+          <textarea id="inquiryInput" placeholder="예: 배송이 언제 도착하는지 알고 싶습니다."></textarea>
+          <div class="actions">
+            <button class="button button-primary" id="analyzeButton" type="button">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M5 12h12M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+              </svg>
+              분석
+            </button>
+            <button class="button button-secondary" id="clearButton" type="button">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M6 7h12M10 11v6M14 11v6M9 7l1-2h4l1 2M8 7l1 13h6l1-13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+              </svg>
+              초기화
+            </button>
+          </div>
+          <div class="samples" aria-label="테스트 문의">
+            <button class="sample-button" type="button" data-sample="배송이 언제 도착하는지 알고 싶습니다.">단순 배송 문의</button>
+            <button class="sample-button" type="button" data-sample="구매한 제품을 환불하고 싶습니다. 절차를 알려주세요.">단순 환불 요청</button>
+            <button class="sample-button" type="button" data-sample="제품 사용 후 얼굴이 붉어지고 따가워요. 부작용인가요?">부작용 의심</button>
+            <button class="sample-button" type="button" data-sample="제품 사용 뒤 발진이 생겼고 환불도 받고 싶습니다.">부작용+환불</button>
+            <button class="sample-button" type="button" data-sample="멤버십 특별 보상 정책이 있다고 들었는데 제 경우도 적용되나요?">정책 확인 불가</button>
+          </div>
+          <p class="footnote">자동 발송용이 아니며, 상담원이 개인정보와 정책 근거를 확인한 뒤 사용해야 합니다.</p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2 class="panel-title">분석 결과</h2>
+          <button class="button button-secondary" id="copyButton" type="button" disabled>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M8 8h10v12H8zM6 16H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+            <span id="copyLabel">초안 복사</span>
+          </button>
+        </div>
+        <div class="panel-body" id="resultArea">
+          <div class="empty">문의 입력 후 분석하면 분류와 초안이 표시됩니다.</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script id="prototype-logic">
+    (function () {
+      "use strict";
+
+      const APPROVED_POLICY_CONNECTED = false;
+      const CATEGORIES = {
+        delivery: "배송",
+        refund: "환불",
+        ingredient: "성분",
+        adverse: "부작용",
+        other: "기타"
+      };
+
+      const SIGNAL_RULES = {
+        delivery: [
+          { label: "배송", pattern: /배송|택배|운송장|송장|출고|발송|도착|배송지|주소\s*변경|언제\s*(오|도착)/i }
+        ],
+        refund: [
+          { label: "환불/반품", pattern: /환불|반품|교환|취소|결제\s*취소|회수|환불금|반송/i }
+        ],
+        ingredient: [
+          { label: "성분", pattern: /성분|전성분|원료|향료|파라벤|레티놀|나이아신아마이드|비건|임산부|저자극|알레르기|알러지/i }
+        ],
+        adverse: [
+          { label: "증상/부작용", pattern: /부작용|트러블|발진|가려|따가|따끔|화끈|붉어|빨개|붓|부었|부어|두드러기|통증|피부염|염증|진물|상처|병원|눈.*시림/i }
+        ],
+        policy: [
+          { label: "정책 확인", pattern: /정책|약관|규정|보상|무료|무상|보장|100%|무조건|확정|가능하다고\s*들|적용되나요/i }
+        ],
+        legal: [
+          { label: "법적/강한 클레임", pattern: /소송|고소|고발|공정위|소보원|소비자원|언론|법적|피해\s*보상|책임져/i }
+        ]
+      };
+
+      const PII_RULES = [
+        { type: "주민등록번호 가능성", pattern: /\b\d{6}-[1-4]\d{6}\b/g, replacement: "[민감번호]" },
+        { type: "전화번호", pattern: /01[016789][-\s.]?\d{3,4}[-\s.]?\d{4}/g, replacement: "[전화번호]" },
+        { type: "이메일", pattern: /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, replacement: "[이메일]" },
+        { type: "주문번호 가능성", pattern: /(주문\s*번호|주문번호|오더|order\s*id|order)[\s:#-]*[A-Z0-9-]{5,}/gi, replacement: "$1 [주문번호]" },
+        { type: "긴 숫자 식별자", pattern: /\b\d{10,}\b/g, replacement: "[식별번호]" },
+        { type: "주소 가능성", pattern: /(서울|부산|대구|인천|광주|대전|울산|세종|경기|강원|충북|충남|전북|전남|경북|경남|제주)[^\n,]{2,50}(로|길|동|구|군|읍|면)[^\n,]{0,50}/g, replacement: "[주소 가능성]" }
+      ];
+
+      const DRAFTS = {
+        delivery:
+          "안녕하세요, 고객님. 배송 관련 문의를 남겨주셔서 감사합니다.\n\n정확한 안내를 위해 주문 정보와 배송 상태를 확인한 뒤 답변드리겠습니다. 현재 확인 전에는 도착 예정일, 출고 여부, 배송지 변경 가능 여부를 확정해 안내드리기 어렵습니다.\n\n확인되는 내용을 바탕으로 다시 안내드리겠습니다.",
+        refund:
+          "안녕하세요, 고객님. 환불 관련 문의 확인했습니다.\n\n환불 가능 여부와 진행 방법은 구매 내역, 상품 상태, 승인된 환불 기준 확인 후 안내드릴 수 있습니다. 확인 전에는 환불 가능 여부나 처리 일정을 확정해 말씀드리기 어렵습니다.\n\n관련 내용을 확인한 뒤 가능한 절차를 안내드리겠습니다.",
+        ingredient:
+          "안녕하세요, 고객님. 성분 관련 문의를 남겨주셔서 감사합니다.\n\n정확한 안내를 위해 해당 제품의 공식 전성분과 승인된 제품 정보를 확인한 뒤 답변드리겠습니다. 특정 성분에 민감하거나 알레르기 이력이 있으신 경우, 사용 전 전문가와 상담해 주세요.\n\n확인되는 공식 정보를 기준으로 다시 안내드리겠습니다.",
+        adverse:
+          "안녕하세요, 고객님. 제품 사용 중 불편을 겪으셨다니 먼저 안타깝습니다.\n\n현재 증상이 의심된다면 제품 사용을 중단하시고, 증상이 지속되거나 심해질 경우 의료 전문가와 상담해 주세요. 이 초안은 진단이나 치료 안내가 아니며, 상담원이 제품명, 사용 시점, 증상 경과를 개인정보 보호 기준에 맞게 확인한 뒤 안내드려야 합니다.\n\n환불, 교환, 보상 가능 여부는 승인된 기준 확인 후 별도로 안내드리겠습니다.",
+        other:
+          "안녕하세요, 고객님. 문의 내용을 확인했습니다.\n\n현재 이 프로토타입에는 해당 사안에 대한 승인된 정책 자료가 연결되어 있지 않아 확정 답변을 드리기 어렵습니다. 상담원이 관련 자료와 처리 기준을 확인한 뒤 정확히 안내드리겠습니다.\n\n확인 후 다시 답변드리겠습니다."
+      };
+
+      const CHECKLIST = {
+        delivery: ["주문/배송 조회 확인", "배송일·출고 여부 확정 표현 금지", "주소 등 개인정보 반복 금지"],
+        refund: ["구매 내역과 상품 상태 확인", "환불 가능 약속 금지", "승인된 환불 기준 확인"],
+        ingredient: ["공식 전성분 자료 확인", "효능·안전성 단정 금지", "민감 성분 문의는 전문가 상담 권고"],
+        adverse: ["상담원 우선 검토", "진단·치료 표현 금지", "사용 중단 및 전문가 상담 안내", "보상 약속 금지"],
+        other: ["관련 정책 자료 확인", "근거 없는 정책 생성 금지", "추가 정보 요청 여부 확인"]
+      };
+
+      const SAMPLE_CASES = [
+        { name: "단순 배송 문의", input: "배송이 언제 도착하는지 알고 싶습니다." },
+        { name: "단순 환불 요청", input: "구매한 제품을 환불하고 싶습니다. 절차를 알려주세요." },
+        { name: "부작용 의심", input: "제품 사용 후 얼굴이 붉어지고 따가워요. 부작용인가요?" },
+        { name: "복합 문의(부작용+환불)", input: "제품 사용 뒤 발진이 생겼고 환불도 받고 싶습니다." },
+        { name: "정책 확인 불가 케이스", input: "멤버십 특별 보상 정책이 있다고 들었는데 제 경우도 적용되나요?" }
+      ];
+
+      function compactText(value) {
+        return String(value || "").replace(/\s+/g, " ").trim();
+      }
+
+      function findSignals(text) {
+        const signals = {};
+        Object.keys(SIGNAL_RULES).forEach((group) => {
+          signals[group] = SIGNAL_RULES[group]
+            .filter((rule) => rule.pattern.test(text))
+            .map((rule) => rule.label);
+        });
+        return signals;
+      }
+
+      function redactPII(text) {
+        let redacted = text;
+        const detectedTypes = [];
+        PII_RULES.forEach((rule) => {
+          const matches = redacted.match(rule.pattern);
+          if (matches && matches.length > 0) {
+            detectedTypes.push(rule.type);
+            redacted = redacted.replace(rule.pattern, rule.replacement);
+          }
+        });
+        return {
+          redactedText: redacted,
+          detectedTypes: Array.from(new Set(detectedTypes))
+        };
+      }
+
+      function chooseCategory(signals) {
+        if (signals.adverse.length > 0) return "adverse";
+        if (signals.ingredient.length > 0) return "ingredient";
+        if (signals.refund.length > 0) return "refund";
+        if (signals.delivery.length > 0) return "delivery";
+        return "other";
+      }
+
+      function getConfidence(categoryKey, signals) {
+        const categoryHitCount = ["delivery", "refund", "ingredient", "adverse"]
+          .filter((key) => signals[key].length > 0).length;
+        if (categoryKey === "other") return "낮음";
+        if (categoryHitCount > 1) return "중간";
+        return signals[categoryKey].length > 0 ? "높음" : "낮음";
+      }
+
+      function analyzeInquiry(rawInput) {
+        const original = String(rawInput || "");
+        const normalized = compactText(original);
+        const pii = redactPII(original);
+
+        if (!normalized) {
+          return {
+            category: CATEGORIES.other,
+            categoryKey: "other",
+            risk: "낮음",
+            confidence: "낮음",
+            detectedSignals: [],
+            riskReasons: ["문의 내용이 비어 있습니다."],
+            piiDetected: [],
+            policyStatus: "분석할 문의 없음",
+            approvalStatus: "입력 대기",
+            redactedInput: "",
+            responseDraft: "문의 내용을 입력하면 상담원 검토용 초안이 생성됩니다.",
+            nextChecks: CHECKLIST.other
+          };
+        }
+
+        const signals = findSignals(normalized);
+        const categoryKey = chooseCategory(signals);
+        const detectedSignals = Object.keys(signals).flatMap((key) => signals[key]);
+        const policyClaim = signals.policy.length > 0;
+        const riskReasons = [];
+
+        if (signals.adverse.length > 0) riskReasons.push("부작용 또는 증상 표현 감지");
+        if (signals.legal.length > 0) riskReasons.push("법적 분쟁 또는 강한 클레임 표현 감지");
+        if (pii.detectedTypes.length > 0) riskReasons.push("개인정보 가능성 감지");
+        if (policyClaim && !APPROVED_POLICY_CONNECTED) riskReasons.push("승인된 자료 없는 정책 확인 요청");
+        if (categoryKey === "ingredient" && /알레르기|알러지/i.test(normalized)) riskReasons.push("알레르기 관련 성분 문의");
+
+        const risk = riskReasons.length > 0 ? "높음" : "낮음";
+
+        return {
+          category: CATEGORIES[categoryKey],
+          categoryKey,
+          risk,
+          confidence: getConfidence(categoryKey, signals),
+          detectedSignals: Array.from(new Set(detectedSignals.length ? detectedSignals : ["분류 신호 없음"])),
+          riskReasons: riskReasons.length ? riskReasons : ["고위험 신호 없음"],
+          piiDetected: pii.detectedTypes,
+          policyStatus: policyClaim ? "정책 근거 확인 필요" : "일반 초안 생성",
+          approvalStatus: risk === "높음" ? "사람 승인 대기" : "상담원 검토 후 사용 가능",
+          redactedInput: pii.redactedText,
+          responseDraft: DRAFTS[categoryKey],
+          nextChecks: CHECKLIST[categoryKey]
+        };
+      }
+
+      function makeChips(items) {
+        const list = document.createElement("ul");
+        list.className = "chips";
+        items.forEach((item) => {
+          const chip = document.createElement("li");
+          chip.className = "chip";
+          chip.textContent = item;
+          list.appendChild(chip);
+        });
+        return list;
+      }
+
+      function section(title, child) {
+        const wrapper = document.createElement("section");
+        wrapper.className = "section";
+        const heading = document.createElement("h3");
+        heading.className = "section-title";
+        heading.textContent = title;
+        wrapper.append(heading, child);
+        return wrapper;
+      }
+
+      function renderResult(result) {
+        const area = document.getElementById("resultArea");
+        const copyButton = document.getElementById("copyButton");
+        const copyLabel = document.getElementById("copyLabel");
+        const highRisk = result.risk === "높음";
+        area.textContent = "";
+
+        const metrics = document.createElement("div");
+        metrics.className = "result-grid";
+        [
+          { label: "카테고리", value: result.category, className: result.categoryKey },
+          { label: "위험도", value: result.risk, className: result.risk === "높음" ? "risk-high" : "risk-low" },
+          { label: "신뢰도", value: result.confidence, className: "other" },
+          { label: "승인 상태", value: result.approvalStatus, className: highRisk ? "approval-wait" : "approval-ready" }
+        ].forEach((item) => {
+          const metric = document.createElement("div");
+          metric.className = "metric";
+          const label = document.createElement("p");
+          label.className = "metric-label";
+          label.textContent = item.label;
+          const value = document.createElement("span");
+          value.className = `pill ${item.className}`;
+          value.textContent = item.value;
+          metric.append(label, value);
+          metrics.appendChild(metric);
+        });
+
+        const notice = document.createElement("div");
+        notice.className = "notice";
+        notice.textContent = highRisk
+          ? "위험도가 높아 사람 승인 대기 상태입니다. 승인 전에는 초안 복사를 비활성화합니다."
+          : result.policyStatus === "정책 근거 확인 필요"
+          ? "승인된 정책 자료가 연결되어 있지 않으므로 정책, 보상, 적용 여부를 확정하지 않습니다."
+          : "초안은 상담원 검토 후 사용하며, 실제 주문 정보나 정책 확인 전 확정 표현을 피합니다.";
+
+        const draft = document.createElement("div");
+        draft.className = "draft";
+        draft.textContent = result.responseDraft;
+
+        const redacted = document.createElement("div");
+        redacted.className = "redacted";
+        redacted.textContent = `${result.piiDetected.length ? "감지됨: " + result.piiDetected.join(", ") : "감지된 개인정보 패턴 없음"}\n\n${result.redactedInput || "표시할 문의 없음"}`;
+
+        area.append(
+          metrics,
+          notice,
+          section("응대 초안", draft),
+          section("감지 신호", makeChips(result.detectedSignals)),
+          section("검토 사유", makeChips(result.riskReasons)),
+          section("상담원 확인 항목", makeChips(result.nextChecks)),
+          section("개인정보 처리", redacted)
+        );
+
+        const emptyDraft = !result.responseDraft || result.responseDraft.startsWith("문의 내용을 입력");
+        copyButton.disabled = highRisk || emptyDraft;
+        copyButton.dataset.draft = highRisk || emptyDraft ? "" : result.responseDraft;
+        copyLabel.textContent = highRisk ? "승인 후 복사 가능" : "초안 복사";
+        copyButton.title = highRisk ? "사람 승인 대기 상태에서는 초안 복사가 잠겨 있습니다." : "";
+      }
+
+      function init() {
+        const input = document.getElementById("inquiryInput");
+        const analyzeButton = document.getElementById("analyzeButton");
+        const clearButton = document.getElementById("clearButton");
+        const copyButton = document.getElementById("copyButton");
+        const copyLabel = document.getElementById("copyLabel");
+
+        analyzeButton.addEventListener("click", () => renderResult(analyzeInquiry(input.value)));
+        input.addEventListener("keydown", (event) => {
+          if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+            renderResult(analyzeInquiry(input.value));
+          }
+        });
+        clearButton.addEventListener("click", () => {
+          input.value = "";
+          copyButton.disabled = true;
+          copyButton.dataset.draft = "";
+          copyLabel.textContent = "초안 복사";
+          copyButton.title = "";
+          document.getElementById("resultArea").innerHTML = '<div class="empty">문의 입력 후 분석하면 분류와 초안이 표시됩니다.</div>';
+          input.focus();
+        });
+        copyButton.addEventListener("click", async () => {
+          if (!copyButton.dataset.draft) return;
+          try {
+            await navigator.clipboard.writeText(copyButton.dataset.draft);
+            copyLabel.textContent = "복사됨";
+          } catch (error) {
+            copyLabel.textContent = "복사 실패";
+          }
+          window.setTimeout(() => {
+            copyLabel.textContent = "초안 복사";
+          }, 1400);
+        });
+        document.querySelectorAll(".sample-button").forEach((button) => {
+          button.addEventListener("click", () => {
+            input.value = button.dataset.sample || "";
+            renderResult(analyzeInquiry(input.value));
+          });
+        });
+      }
+
+      if (typeof window !== "undefined") {
+        window.CSPrototype = { analyzeInquiry, sampleCases: SAMPLE_CASES };
+      }
+
+      if (typeof document !== "undefined") {
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", init);
+        } else {
+          init();
+        }
+      }
+    }());
+  </script>
+</body>
+</html>
